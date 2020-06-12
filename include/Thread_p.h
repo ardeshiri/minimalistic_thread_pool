@@ -26,9 +26,10 @@ class Thread_p
       ~Thread_p();
       void push_task(task&& tsk, size_t prio);
       void stop();
+      void stop(size_t th_num);
 
       template<typename T>
-      void load_to(T*);
+      void enq_to(T*);
 
    protected:
    private:
@@ -40,6 +41,12 @@ class Thread_p
    std::atomic<bool> running;
 };
 
+template<size_t N>
+void Thread_p<N>::stop(size_t th_num)
+{
+   if( th_num <  max_threads)
+      thread_array[th_num].stop();
+}
 
 template<size_t N>
 Thread_p<N>::Thread_p():thread_p_cv{},thread_array{},pair_vec{},mtx_over_vec{},running{false}
@@ -82,12 +89,12 @@ void Thread_p<N>::stop()
 
 template<size_t N>
 template<typename T>
-void Thread_p<N>::load_to(T* th_q)
+void Thread_p<N>::enq_to(T* th_q)
 {
    std::unique_lock<std::mutex> ul{mtx_over_vec};
    thread_p_cv.wait(ul, [this](){return !pair_vec.empty() || !running;});
    if(!running)
-   {std::cout<<"-----------"<<std::endl;
+   {
       return;
    }
    std::pop_heap( pair_vec.begin(), pair_vec.end(), dd::task_pair_comp<pr>{} );

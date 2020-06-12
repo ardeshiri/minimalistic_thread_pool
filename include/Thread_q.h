@@ -35,7 +35,6 @@ class Thread_q
         void vec_enq( std::vector<task_t>& );
         void run();
         void stop();
-        bool is_busy();
         void initialize(pool*);
         size_t qsize();
 
@@ -44,17 +43,14 @@ class Thread_q
         std::vector<task_t> task_q;
         pool* thread_p_ptr;
         std::atomic<bool> running;
-        std::atomic<bool> busy;
         std::thread th;
         void loop();
 };
 
 
 template<typename T>
-Thread_q<T>::Thread_q():task_q{}, thread_p_ptr{nullptr}, running{false}, busy{true}, th{}
-{
-std::cout<<"made!!"<<std::endl;
-}
+Thread_q<T>::Thread_q():task_q{}, thread_p_ptr{nullptr}, running{false}, th{}
+{}
 
 
 template<typename T>
@@ -93,22 +89,18 @@ template<typename T>
 void Thread_q<T>::loop()
 {
    running = true;
-   busy = true;
-
    while(running)
    {
       if(task_q.empty())
       {
-         busy = false;
-         thread_p_ptr->load_to(this);
+         thread_p_ptr->enq_to(this);
       }
-      if(!running)
-      {std::cout<<"+++++++++++++"<<std::endl;
-         return;
-      }
-      busy = true;
       std::for_each(task_q.begin(),task_q.end(),[](auto& t){ t(); });
       task_q.clear();
+      if(!running)
+      {
+         return;
+      }
    }
 }
 
@@ -129,18 +121,10 @@ void Thread_q<T>::stop()
 }
 
 template<typename T>
-bool Thread_q<T>::is_busy()
-{
-   return busy;
-}
-
-template<typename T>
 void Thread_q<T>::initialize(T* t_ptr)
 {
    thread_p_ptr = t_ptr;
 }
-
-
 
 }
 
