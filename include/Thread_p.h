@@ -14,12 +14,12 @@ struct task_pair_comp
    }
 };
 
-template<size_t N>
+template<size_t N, typename TSK = std::packaged_task<void()>>
 class Thread_p
 {
    public:
 
-      using task = std::packaged_task<void()>;
+      using task = TSK;
       using pr = std::pair<size_t, task>;
 
       Thread_p();
@@ -41,15 +41,15 @@ class Thread_p
    std::atomic<bool> running;
 };
 
-template<size_t N>
-void Thread_p<N>::stop(size_t th_num)
+template<size_t N,typename TSK>
+void Thread_p<N,TSK>::stop(size_t th_num)
 {
    if( th_num <  max_threads)
       thread_array[th_num].stop();
 }
 
-template<size_t N>
-Thread_p<N>::Thread_p():thread_p_cv{},thread_array{},pair_vec{},mtx_over_vec{},running{false}
+template<size_t N,typename TSK>
+Thread_p<N,TSK>::Thread_p():thread_p_cv{},thread_array{},pair_vec{},mtx_over_vec{},running{false}
 {
    std::for_each( thread_array.begin(), thread_array.end(), [this](auto& th){ th.initialize(this); } );
    std::for_each( thread_array.begin(), thread_array.end(), [](auto& th){ th.run(); } );
@@ -57,15 +57,15 @@ Thread_p<N>::Thread_p():thread_p_cv{},thread_array{},pair_vec{},mtx_over_vec{},r
 }
 
 
-template<size_t N>
-Thread_p<N>::~Thread_p()
+template<size_t N,typename TSK>
+Thread_p<N,TSK>::~Thread_p()
 {
    stop();
 }
 
 
-template<size_t N>
-void Thread_p<N>::push_task(task&& tsk, size_t prio)
+template<size_t N,typename TSK>
+void Thread_p<N,TSK>::push_task(task&& tsk, size_t prio)
 {
    prio = (prio > 10) ? 10 : prio;
    std::lock_guard<std::mutex> lg{mtx_over_vec};
@@ -78,8 +78,8 @@ void Thread_p<N>::push_task(task&& tsk, size_t prio)
 }
 
 
-template<size_t N>
-void Thread_p<N>::stop()
+template<size_t N,typename TSK>
+void Thread_p<N,TSK>::stop()
 {
    std::for_each( thread_array.begin(), thread_array.end(), [](auto& th){ th.stop(); } );
    running = false;
@@ -87,9 +87,9 @@ void Thread_p<N>::stop()
 }
 
 
-template<size_t N>
+template<size_t N,typename TSK>
 template<typename T>
-void Thread_p<N>::enq_to(T* th_q)
+void Thread_p<N,TSK>::enq_to(T* th_q)
 {
    std::unique_lock<std::mutex> ul{mtx_over_vec};
    thread_p_cv.wait(ul, [this](){return !pair_vec.empty() || !running;});

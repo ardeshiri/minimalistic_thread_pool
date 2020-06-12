@@ -1,25 +1,4 @@
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <vector>
-#include <list>
-#include <functional>
-#include <thread>
-#include <mutex>
-#include <future>
-#include <condition_variable>
-#include <memory>
-#include <tuple>
-#include <atomic>
-#include <utility>
-#include <map>
-#include <numeric>
 #include "Thread_q.h"
 #include "Thread_p.h"
 

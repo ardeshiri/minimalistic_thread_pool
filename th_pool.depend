@@ -139,33 +139,12 @@
 
 1591867129 source:/home/snake/Cods/CodeBlocks/th_pool/src/Thread_q.cpp
 
-1591973538 source:/home/snake/Cods/CodeBlocks/th_pool/main.cpp
+1591987785 source:/home/snake/Cods/CodeBlocks/th_pool/main.cpp
 	<iostream>
-	<stdio.h>
-	<stdlib.h>
-	<unistd.h>
-	<sys/types.h>
-	<sys/socket.h>
-	<netinet/in.h>
-	<arpa/inet.h>
-	<netdb.h>
-	<vector>
-	<list>
-	<functional>
-	<thread>
-	<mutex>
-	<future>
-	<condition_variable>
-	<memory>
-	<tuple>
-	<atomic>
-	<utility>
-	<map>
-	<numeric>
 	"Thread_q.h"
 	"Thread_p.h"
 
-1591973549 /home/snake/Cods/CodeBlocks/th_pool/include/Thread_q.h
+1591973587 /home/snake/Cods/CodeBlocks/th_pool/include/Thread_q.h
 	<vector>
 	<thread>
 	<mutex>
@@ -177,7 +156,7 @@
 	<algorithm>
 	"Error.h"
 
-1591973190 /home/snake/Cods/CodeBlocks/th_pool/include/Thread_p.h
+1591987950 /home/snake/Cods/CodeBlocks/th_pool/include/Thread_p.h
 	"Thread_q.h"
 	<array>
 
