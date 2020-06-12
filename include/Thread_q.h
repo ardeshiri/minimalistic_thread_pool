@@ -1,7 +1,7 @@
 #ifndef Thread_q_H
 #define Thread_q_H
 
-#include <queue>
+#include <vector>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -10,6 +10,8 @@
 #include <utility>
 #include <chrono>
 #include <algorithm>
+#include "Error.h"
+
 using namespace std::chrono;
 
 namespace dd{
@@ -19,23 +21,28 @@ class Thread_q
 {
     public:
 
-        using task = T;
+        using pool = T;
+        using task_t = typename pool::task;
 
         Thread_q();
+        Thread_q(const Thread_q&) = delete;
+        Thread_q& operator=(const Thread_q&) = delete;
+        Thread_q(Thread_q&&) = delete;
+        Thread_q& operator=(Thread_q&&) = delete;
         ~Thread_q();
 
-        void enq( task&& );
-        void vec_enq( std::vector<task>& );
+        void enq( task_t&& );
+        void vec_enq( std::vector<task_t>& );
         void run();
         void stop();
         bool is_busy();
+        void initialize(pool*);
+        size_t qsize();
 
     protected:
-
     private:
-        std::queue<task> task_q;
-        std::mutex mtx;
-        std::condition_variable cv;
+        std::vector<task_t> task_q;
+        pool* thread_p_ptr;
         std::atomic<bool> running;
         std::atomic<bool> busy;
         std::thread th;
@@ -44,10 +51,11 @@ class Thread_q
 
 
 template<typename T>
-Thread_q<T>::Thread_q():task_q{}, mtx{}, cv{}, running{false}, busy{false}, th{}
+Thread_q<T>::Thread_q():task_q{}, thread_p_ptr{nullptr}, running{false}, busy{true}, th{}
 {
-    //ctor
+std::cout<<"made!!"<<std::endl;
 }
+
 
 template<typename T>
 Thread_q<T>::~Thread_q()
@@ -59,59 +67,65 @@ Thread_q<T>::~Thread_q()
    }
 }
 
-template<typename T>
-void Thread_q<T>::enq( task&& t)
-{
-   std::lock_guard<std::mutex> lg{mtx};
-   task_q.push(std::move(t));
-   cv.notify_one();
-}
 
 template<typename T>
-void Thread_q<T>::vec_enq( std::vector<task>& tv)
+size_t Thread_q<T>::qsize()
 {
-   std::lock_guard<std::mutex> lg{mtx};
-   std::for_each( tv.begin(), tv.end(), [this](auto& t){ task_q.push(std::move(t));} );
-   cv.notify_one();
+   return task_q.size();
 }
+
+
+template<typename T>
+void Thread_q<T>::enq( task_t&& t)
+{
+   task_q.push_back(std::move(t));
+}
+
+
+template<typename T>
+void Thread_q<T>::vec_enq( std::vector<task_t>& tv)
+{
+   std::move(tv.begin(), tv.end(),std::back_inserter(task_q));
+}
+
 
 template<typename T>
 void Thread_q<T>::loop()
 {
    running = true;
    busy = true;
-   std::vector<task> tv{};
+
    while(running)
    {
-      tv.clear();
+      if(task_q.empty())
       {
          busy = false;
-         std::unique_lock ul(mtx);
-         cv.wait(ul , [this](){ return ((!task_q.empty()) || !running ) ; });
-         busy = true;
-         while(!task_q.empty())
-         {
-            tv.push_back(std::move(task_q.front()));
-            task_q.pop();
-         }
+         thread_p_ptr->load_to(this);
       }
-      std::for_each(tv.begin(),tv.end(),[](auto& t){ t(); });
+      if(!running)
+      {std::cout<<"+++++++++++++"<<std::endl;
+         return;
+      }
+      busy = true;
+      std::for_each(task_q.begin(),task_q.end(),[](auto& t){ t(); });
+      task_q.clear();
    }
 }
 
 template<typename T>
 void Thread_q<T>::run()
 {
+   if(thread_p_ptr == nullptr)
+   {
+      throw Error{"uninitialized thread_p_ptr."};
+   }
    th = std::thread{&Thread_q::loop, this};
-   std::this_thread::sleep_for(1ms);
-   cv.notify_one();
 }
 
 template<typename T>
 void Thread_q<T>::stop()
 {
    running = false;
-   cv.notify_one();
 }
 
 template<typename T>
@@ -119,6 +133,13 @@ bool Thread_q<T>::is_busy()
 {
    return busy;
 }
+
+template<typename T>
+void Thread_q<T>::initialize(T* t_ptr)
+{
+   thread_p_ptr = t_ptr;
+}
+
 
 
 }

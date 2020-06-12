@@ -34,12 +34,11 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="include/Task_priority_queue.h" />
+		<Unit filename="include/Error.h" />
 		<Unit filename="include/Thread_p.h" />
 		<Unit filename="include/Thread_q.h" />
-		<Unit filename="include/cls.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="src/Task_priority_queue.cpp" />
+		<Unit filename="src/Error.cpp" />
 		<Unit filename="src/Thread_p.cpp" />
 		<Unit filename="src/Thread_q.cpp" />
 		<Extensions>

@@ -25,53 +25,51 @@
 
 using namespace std;
 
+
 void f1()
 {
-   //this_thread::sleep_for(1s);
-
-   cout<<"111111"<<endl;
+   this_thread::sleep_for(1s);
+   cout<<"1 running on: "<<this_thread::get_id()<<endl;
 }
 
 void f2()
 {
-   //this_thread::sleep_for(3s);
-
-   cout<<"222222"<<endl;
+   this_thread::sleep_for(1s);
+   cout<<"2 running on: "<<this_thread::get_id()<<endl;
 }
 
 void f3()
 {
-  // this_thread::sleep_for(1s);
-
-   cout<<"333333"<<endl;
+   this_thread::sleep_for(1s);
+   cout<<"3 running on: "<<this_thread::get_id()<<endl;;
 }
 
-void f4()
-{
-   this_thread::sleep_for(5s);
 
-   cout<<"+==============================+"<<endl;
-}
 
-void xc(int x)
-{
-   cout<<x<<endl;
-}
 
 int main()
 {
+   dd::Thread_p<2> th{};
+
    packaged_task<void()> pt1{f1};
    packaged_task<void()> pt2{f2};
    packaged_task<void()> pt3{f3};
-   packaged_task<void()> pt4{f4};
-
-   dd::Thread_p<10> th{};
-   th.push_task(move(pt1), 14);
-
+   packaged_task<void()> pt4{f1};
+   packaged_task<void()> pt5{f2};
+   packaged_task<void()> pt6{f3};
 
 
+   th.push_task(move(pt1), 0);
+   th.push_task(move(pt2), 0);
+   th.push_task(move(pt3), 0);
+   th.push_task(move(pt4), 0);
+   th.push_task(move(pt5), 0);
+   th.push_task(move(pt6), 0);
+
+
+   cout<<"reached!!"<<endl;
 
    this_thread::sleep_for(10s);
-
+   //th.stop();
    return 0;
 }
