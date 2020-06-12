@@ -1,0 +1,5 @@
+A minimalistic, yet fast, efficient, and functioning thread pool.
+-able to manage priorities for tasks.
+-with a simple solution to prevent starvation.
+-no separate control thread.
+-able to shut down threads when needed.
